@@ -254,6 +254,6 @@ file_strategy = WriteToFileStrategy(
 )  # Provide dynamic path
 raw_print_strategy = PrintToConsoleStrategy()
 gui_window_strategy = DisplayInGUIWindowStrategy()
-mail_strategy = SendToEmailStrategy("davidtadediji@gmail.com", "davidadey000@gmail.com")
+mail_strategy = SendToEmailStrategy("recipient@gmail.com", "sender@gmail.com")
 
-display_summary("https://edwarddonner.com", mail_strategy)
+display_summary("https://edwarddonner.com", gui_window_strategy)
