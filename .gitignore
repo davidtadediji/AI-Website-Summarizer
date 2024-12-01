@@ -1,0 +1,6 @@
+# Ignore Jupyter Notebook files
+*.ipynb
+*.log
+summary.md
+__pycache__/
+diagnostics.py
