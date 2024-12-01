@@ -6,14 +6,20 @@ import requests
 from dotenv import load_dotenv
 from bs4 import BeautifulSoup
 from openai import OpenAI
-from rich.console import Console
-from rich.markdown import Markdown
-from abc import ABC, abstractmethod
+
+
 import validators
 from logger import configured_logger
 
-load_dotenv()
+import tkinter as tk
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from rich.console import Console
+from rich.markdown import Markdown
+from abc import ABC, abstractmethod
 
+load_dotenv()
 
 def log_display_summary(func):
     """
@@ -187,6 +193,50 @@ class PrintToConsoleStrategy(Display):
         print(summary)
 
 
+class DisplayInGUIWindowStrategy(Display):
+    def handle_result(self, summary):
+        try:
+            window = tk.Tk()
+            window.title("Summary Report")
+            label = tk.Label(window, text=summary, padx=20, pady=20)
+            label.pack()
+            window.mainloop()
+        except Exception as e:
+            raise RuntimeError(f"Failed to display summary in GUI window --> {str(e)}")
+
+
+class SendToEmailStrategy(Display):
+    def __init__(self, recipient_email: str = "davidtadediji@gmail.com", sender_email: str = "davidadey000@gmail.com",
+                 smtp_server: str = "smtp.gmail.com", smtp_port: int = 587):
+        self.recipient_email = recipient_email
+        self.sender_email = sender_email
+        self.smtp_server = smtp_server
+        self.smtp_port = smtp_port
+
+    def handle_result(self, summary):
+        try:
+            msg = MIMEMultipart()
+            msg['From'] = self.sender_email
+            msg['To'] = self.recipient_email
+            msg['Subject'] = 'Summary Report'
+
+            msg.attach(MIMEText(summary, 'plain'))
+
+            with smtplib.SMTP(self.smtp_server, self.smtp_port) as server:
+                # Start TLS (Transport Layer Security) to secure the connection
+                server.starttls()
+
+                # Login to the server with the sender's email and password
+                server.login(self.sender_email,
+                             "<Your_Email_Password>")  # Replace with the correct password or app-specific password
+
+                # Send the email
+                server.sendmail(self.sender_email, self.recipient_email, msg.as_string())
+
+            print(f"Summary sent to {self.recipient_email}")
+        except Exception as e:
+            raise RuntimeError(f"Failed to send summary email: {str(e)}")
+
 @log_display_summary
 def display_summary(url, strategy: Display = None):
     # Initialize OpenAI instance
@@ -203,5 +253,7 @@ file_strategy = WriteToFileStrategy(
     file_path="week1/summary.md"
 )  # Provide dynamic path
 raw_print_strategy = PrintToConsoleStrategy()
+gui_window_strategy = DisplayInGUIWindowStrategy()
+mail_strategy = SendToEmailStrategy("davidtadediji@gmail.com", "davidadey000@gmail.com")
 
-display_summary("https://edwarddonner.com", console_strategy)
+display_summary("https://edwarddonner.com", mail_strategy)
