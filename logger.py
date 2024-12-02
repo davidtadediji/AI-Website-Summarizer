@@ -7,6 +7,7 @@ import json
 from datetime import datetime
 import diagnostics
 
+
 def setup_logger(
     name="web_summarizer", log_file="web_summarizer.log", level=logging.INFO
 ):
